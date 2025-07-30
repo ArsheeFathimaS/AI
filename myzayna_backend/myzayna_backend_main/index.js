@@ -7,6 +7,9 @@ import OpenAI from "openai";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import http from "http";
+import { WebSocketServer } from "ws";
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -168,6 +171,31 @@ const audioFileToBase64 = async (file) => {
   return data.toString("base64");
 };
 
-app.listen(port, () => {
-  console.log(`Virtual Girlfriend listening on port ${port}`);
+const server = http.createServer(app);
+
+const wss = new WebSocketServer({ server });
+
+wss.on("connection", (ws) => {
+  console.log("🟢 WebSocket client connected");
+
+  let audioBuffers = [];
+
+  ws.on("message", (message) => {
+    // Buffer audio chunks
+    audioBuffers.push(message);
+
+    // Optional: after some time, transcribe
+    if (audioBuffers.length >= 30) {
+      // TODO: concatenate buffers and transcribe
+      console.log("Received 30 chunks... ready to process");
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("🔴 WebSocket client disconnected");
+  });
+});
+
+server.listen(port, () => {
+  console.log(`🧠 MyZayna backend running on port ${port}`);
 });
