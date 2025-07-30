@@ -1,4 +1,4 @@
-import { OrbitControls, Environment } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import React, { Suspense } from "react";
 import { Avatar } from "./Avatar";
@@ -14,8 +14,7 @@ export default function Experience() {
       <directionalLight position={[5, 5, 5]} intensity={1} />
       <Suspense fallback={null}>
         <Avatar position={[0, -1.5, 0]} />
-        {/* ✅ Replaced problematic preset */}
-        <Environment preset="city" background />
+        {/* Removed HDRI Environment to fix timeout issue */}
       </Suspense>
       <OrbitControls enablePan={false} />
     </Canvas>
