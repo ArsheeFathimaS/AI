@@ -22,6 +22,10 @@ const openai = new OpenAI({
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.get("/ping", (req, res) => {
+  res.json({ message: "pong" });
+});
+
 const port = 3000;
 
 app.get("/", (req, res) => {
