@@ -1,40 +1,3 @@
-import {
-  CameraControls,
-  ContactShadows,
-  Environment,
-  Text,
-} from "@react-three/drei";
-import { Suspense, useEffect, useRef, useState } from "react";
-import { useChat } from "../hooks/useChat";
-import { Avatar } from "./Avatar";
-
-const Dots = (props) => {
-  const { loading } = useChat();
-  const [loadingText, setLoadingText] = useState("");
-
-  useEffect(() => {
-    if (loading) {
-      const interval = setInterval(() => {
-        setLoadingText((text) => (text.length > 2 ? "." : text + "."));
-      }, 800);
-      return () => clearInterval(interval);
-    } else {
-      setLoadingText("");
-    }
-  }, [loading]);
-
-  if (!loading) return null;
-
-  return (
-    <group {...props}>
-      <Text fontSize={0.14} anchorX="left" anchorY="bottom">
-        {loadingText}
-        <meshBasicMaterial attach="material" color="black" />
-      </Text>
-    </group>
-  );
-};
-
 export const Experience = () => {
   const cameraControls = useRef();
   const { cameraZoomed } = useChat();
@@ -45,7 +8,7 @@ export const Experience = () => {
 
   useEffect(() => {
     if (cameraZoomed) {
-      cameraControls.current.setLookAt(0, 1.5, 1.5, 0, 1.5, 0, true);
+      cameraControls.current.setLookAt(0, 1.5, 2.5, 0, 1.5, 0, true);
     } else {
       cameraControls.current.setLookAt(0, 2.2, 5, 0, 1.0, 0, true);
     }
@@ -54,12 +17,14 @@ export const Experience = () => {
   return (
     <>
       <CameraControls ref={cameraControls} />
+      <ambientLight intensity={1} />
+      <directionalLight position={[5, 10, 5]} intensity={0.8} castShadow />
       <Environment preset="sunset" />
       <Suspense fallback={null}>
         <Dots position-y={1.75} position-x={-0.02} />
+        <Avatar position={[0, -1.2, 0]} scale={1.2} />
       </Suspense>
-      <Avatar />
-      <ContactShadows opacity={0.7} />
+      <ContactShadows opacity={0.7} position={[0, -1.3, 0]} />
     </>
   );
 };
