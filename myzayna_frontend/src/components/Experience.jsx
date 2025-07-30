@@ -2,6 +2,8 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import React, { Suspense } from "react";
 import { Avatar } from "./Avatar";
+import React from "react";
+
 
 export default function Experience() {
   return (
