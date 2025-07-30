@@ -15,12 +15,7 @@ const Dots = (props) => {
   useEffect(() => {
     if (loading) {
       const interval = setInterval(() => {
-        setLoadingText((text) => {
-          if (text.length > 2) {
-            return ".";
-          }
-          return text + ".";
-        });
+        setLoadingText((text) => (text.length > 2 ? "." : text + "."));
       }, 800);
       return () => clearInterval(interval);
     } else {
@@ -59,7 +54,7 @@ export const Experience = () => {
   return (
     <>
       <CameraControls ref={cameraControls} />
-      {/* <Environment preset="sunset" /> */}
+      <Environment preset="sunset" />
       <Suspense fallback={null}>
         <Dots position-y={1.75} position-x={-0.02} />
       </Suspense>

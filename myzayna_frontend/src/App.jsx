@@ -1,9 +1,10 @@
 import { Loader } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Leva } from "leva";
+import { Suspense } from "react";
 import { Experience } from "./components/Experience";
 import { UI } from "./components/UI";
-import VoiceStreamer from "./components/VoiceStreamer"; 
+import VoiceStreamer from "./components/VoiceStreamer";
 
 function App() {
   return (
@@ -12,9 +13,11 @@ function App() {
       <Leva hidden />
       <UI />
       <VoiceStreamer />
-      <Canvas shadows camera={{ position: [0, 0, 1], fov: 30 }}>
-        <Experience />
-      </Canvas>
+      <Suspense fallback={null}>
+        <Canvas shadows camera={{ position: [0, 0, 1], fov: 30 }}>
+          <Experience />
+        </Canvas>
+      </Suspense>
     </>
   );
 }
