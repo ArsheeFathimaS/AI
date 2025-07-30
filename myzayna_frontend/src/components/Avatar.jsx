@@ -23,14 +23,12 @@ const corresponding = {
 let setupMode = false;
 
 export function Avatar(props) {
-  const { nodes, materials, scene } = useGLTF("/models/rpm.glb");
-  const { animations } = useGLTF("/models/animations.glb");
+  const { nodes, materials, scene } = useGLTF("models/rpm.glb");
+  const { animations } = useGLTF("models/animations.glb");
 
   const { message, onMessagePlayed, chat } = useChat();
   const [lipsync, setLipsync] = useState();
-  const [animation, setAnimation] = useState(
-    animations.find(a => a.name === "Idle") ? "Idle" : animations[0].name
-  );
+  const [animation, setAnimation] = useState("Idle");
   const [facialExpression, setFacialExpression] = useState("");
   const [audio, setAudio] = useState();
   const [blink, setBlink] = useState(false);
@@ -41,7 +39,14 @@ export function Avatar(props) {
   const { actions, mixer } = useAnimations(animations, group);
 
   useEffect(() => {
-    actions[animation].reset().fadeIn(mixer.stats.actions.inUse === 0 ? 0 : 0.5).play();
+    if (!animations.length) return;
+    const idleAnim = animations.find(a => a.name === "Idle");
+    setAnimation(idleAnim ? "Idle" : animations[0].name);
+  }, [animations]);
+
+  useEffect(() => {
+    if (!actions[animation]) return;
+    actions[animation].reset().fadeIn(0.5).play();
     return () => actions[animation].fadeOut(0.5);
   }, [animation]);
 
@@ -75,33 +80,33 @@ export function Avatar(props) {
   };
 
   useFrame(() => {
-    if (!setupMode) {
-      Object.keys(nodes.EyeLeft.morphTargetDictionary).forEach(key => {
-        const map = facialExpressions[facialExpression];
-        if (key === "eyeBlinkLeft" || key === "eyeBlinkRight") return;
-        lerpMorphTarget(key, map?.[key] || 0, 0.1);
-      });
+    if (!nodes?.EyeLeft) return;
 
-      lerpMorphTarget("eyeBlinkLeft", blink || winkLeft ? 1 : 0, 0.5);
-      lerpMorphTarget("eyeBlinkRight", blink || winkRight ? 1 : 0, 0.5);
+    Object.keys(nodes.EyeLeft.morphTargetDictionary).forEach(key => {
+      const map = facialExpressions[facialExpression];
+      if (key === "eyeBlinkLeft" || key === "eyeBlinkRight") return;
+      lerpMorphTarget(key, map?.[key] || 0, 0.1);
+    });
 
-      const applied = [];
-      if (message && lipsync) {
-        const t = audio.currentTime;
-        for (let cue of lipsync.mouthCues) {
-          if (t >= cue.start && t <= cue.end) {
-            const morph = corresponding[cue.value];
-            applied.push(morph);
-            lerpMorphTarget(morph, 1, 0.2);
-            break;
-          }
+    lerpMorphTarget("eyeBlinkLeft", blink || winkLeft ? 1 : 0, 0.5);
+    lerpMorphTarget("eyeBlinkRight", blink || winkRight ? 1 : 0, 0.5);
+
+    const applied = [];
+    if (message && lipsync && audio?.currentTime) {
+      const t = audio.currentTime;
+      for (let cue of lipsync.mouthCues) {
+        if (t >= cue.start && t <= cue.end) {
+          const morph = corresponding[cue.value];
+          applied.push(morph);
+          lerpMorphTarget(morph, 1, 0.2);
+          break;
         }
       }
-
-      Object.values(corresponding).forEach(val => {
-        if (!applied.includes(val)) lerpMorphTarget(val, 0, 0.1);
-      });
     }
+
+    Object.values(corresponding).forEach(val => {
+      if (!applied.includes(val)) lerpMorphTarget(val, 0, 0.1);
+    });
   });
 
   useControls("FacialExpressions", {
@@ -131,7 +136,7 @@ export function Avatar(props) {
   });
 
   const [, set] = useControls("MorphTarget", () =>
-    Object.assign({}, ...Object.keys(nodes.EyeLeft.morphTargetDictionary).map(key => ({
+    Object.assign({}, ...Object.keys(nodes.EyeLeft?.morphTargetDictionary || {}).map(key => ({
       [key]: {
         label: key, value: 0, min: 0, max: 1,
         onChange: val => setupMode && lerpMorphTarget(key, val, 1)
@@ -151,6 +156,11 @@ export function Avatar(props) {
     return () => clearTimeout(timeout);
   }, []);
 
+  if (!nodes?.Hips) {
+    console.warn("⚠️ Avatar model failed to load. Check model file or path.");
+    return null;
+  }
+
   return (
     <group {...props} dispose={null} ref={group}>
       <primitive object={nodes.Hips} />
@@ -160,16 +170,16 @@ export function Avatar(props) {
       ].map(name => (
         <skinnedMesh key={name}
           name={name}
-          geometry={nodes[name].geometry}
-          material={materials[nodes[name].material.name]}
-          skeleton={nodes[name].skeleton}
-          morphTargetDictionary={nodes[name].morphTargetDictionary}
-          morphTargetInfluences={nodes[name].morphTargetInfluences}
+          geometry={nodes[name]?.geometry}
+          material={materials[nodes[name]?.material?.name]}
+          skeleton={nodes[name]?.skeleton}
+          morphTargetDictionary={nodes[name]?.morphTargetDictionary}
+          morphTargetInfluences={nodes[name]?.morphTargetInfluences}
         />
       ))}
     </group>
   );
 }
 
-useGLTF.preload("/models/rpm.glb");
-useGLTF.preload("/models/animations.glb");
+useGLTF.preload("models/rpm.glb");
+useGLTF.preload("models/animations.glb");
