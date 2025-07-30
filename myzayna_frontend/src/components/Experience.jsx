@@ -1,30 +1,23 @@
-export const Experience = () => {
-  const cameraControls = useRef();
-  const { cameraZoomed } = useChat();
+import { OrbitControls, Environment } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import React, { Suspense } from "react";
+import { Avatar } from "./Avatar";
 
-  useEffect(() => {
-    cameraControls.current.setLookAt(0, 2, 5, 0, 1.5, 0);
-  }, []);
-
-  useEffect(() => {
-    if (cameraZoomed) {
-      cameraControls.current.setLookAt(0, 1.5, 2.5, 0, 1.5, 0, true);
-    } else {
-      cameraControls.current.setLookAt(0, 2.2, 5, 0, 1.0, 0, true);
-    }
-  }, [cameraZoomed]);
-
+export default function Experience() {
   return (
-    <>
-      <CameraControls ref={cameraControls} />
-      <ambientLight intensity={1} />
-      <directionalLight position={[5, 10, 5]} intensity={0.8} castShadow />
-      <Environment preset="sunset" />
+    <Canvas
+      camera={{ position: [0, 1.5, 3.5], fov: 40 }}
+      gl={{ preserveDrawingBuffer: true }}
+    >
+      <color attach="background" args={["#ececec"]} />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[5, 5, 5]} intensity={1} />
       <Suspense fallback={null}>
-        <Dots position-y={1.75} position-x={-0.02} />
-        <Avatar position={[0, -1.2, 0]} scale={1.2} />
+        <Avatar position={[0, -1.5, 0]} />
+        {/* ✅ Replaced problematic preset */}
+        <Environment preset="city" background />
       </Suspense>
-      <ContactShadows opacity={0.7} position={[0, -1.3, 0]} />
-    </>
+      <OrbitControls enablePan={false} />
+    </Canvas>
   );
-};
+}
