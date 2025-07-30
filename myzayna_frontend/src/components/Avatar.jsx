@@ -23,7 +23,7 @@ const corresponding = {
 let setupMode = false;
 
 export function Avatar(props) {
-  const { nodes, materials, scene } = useGLTF("models/rpm.glb");
+  const { nodes, materials, scene } = useGLTF("models/64f1a714fe61576b46f27ca2.glb");
   const { animations } = useGLTF("models/animations.glb");
 
   const { message, onMessagePlayed, chat } = useChat();
@@ -45,7 +45,7 @@ export function Avatar(props) {
   }, [animations]);
 
   useEffect(() => {
-    if (!actions[animation]) return;
+    if (!actions || !actions[animation]) return;
     actions[animation].reset().fadeIn(0.5).play();
     return () => actions[animation].fadeOut(0.5);
   }, [animation]);
@@ -157,7 +157,7 @@ export function Avatar(props) {
   }, []);
 
   if (!nodes?.Hips) {
-    console.warn("⚠️ Avatar model failed to load. Check model file or path.");
+    console.warn("⚠️ Avatar model missing 'Hips'. nodes =", nodes);
     return null;
   }
 
@@ -165,10 +165,18 @@ export function Avatar(props) {
     <group {...props} dispose={null} ref={group}>
       <primitive object={nodes.Hips} />
       {[
-        "Wolf3D_Body", "Wolf3D_Outfit_Bottom", "Wolf3D_Outfit_Footwear", "Wolf3D_Outfit_Top",
-        "Wolf3D_Hair", "EyeLeft", "EyeRight", "Wolf3D_Head", "Wolf3D_Teeth"
-      ].map(name => (
-        <skinnedMesh key={name}
+        "Wolf3D_Body",
+        "Wolf3D_Outfit_Bottom",
+        "Wolf3D_Outfit_Footwear",
+        "Wolf3D_Outfit_Top",
+        "Wolf3D_Hair",
+        "EyeLeft",
+        "EyeRight",
+        "Wolf3D_Head",
+        "Wolf3D_Teeth"
+      ].map((name) => (
+        <skinnedMesh
+          key={name}
           name={name}
           geometry={nodes[name]?.geometry}
           material={materials[nodes[name]?.material?.name]}
@@ -181,5 +189,5 @@ export function Avatar(props) {
   );
 }
 
-useGLTF.preload("models/rpm.glb");
+useGLTF.preload("models/64f1a714fe61576b46f27ca2.glb");
 useGLTF.preload("models/animations.glb");
