@@ -6,9 +6,9 @@ import { Avatar } from "./Avatar";
 export default function Experience() {
   return (
     <Canvas camera={{ position: [0, 1.5, 3.5], fov: 40 }} gl={{ preserveDrawingBuffer: true }}>
-      <color attach="background" args={["#ececec"]} />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
+      {/* Gradient background comes from CSS now */}
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[2, 4, 5]} intensity={1.5} castShadow />
       <Suspense fallback={null}>
         <Avatar position={[0, -1.5, 0]} />
       </Suspense>
