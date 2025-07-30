@@ -11,7 +11,9 @@ const VoiceStreamer = () => {
 
     const processor = audioContext.createScriptProcessor(4096, 1, 1);
 
-    socketRef.current = new WebSocket("ws://localhost:3000");
+    // Replace with your Render WebSocket URL
+    const wsUrl = import.meta.env.VITE_WS_URL || "wss://myzayna-backend.onrender.com";
+    socketRef.current = new WebSocket(wsUrl);
     socketRef.current.binaryType = "arraybuffer";
 
     socketRef.current.onopen = () => {
