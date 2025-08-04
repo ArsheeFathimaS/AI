@@ -18,15 +18,18 @@ export const UI = ({ hidden, ...props }) => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 bottom-0 z-10 flex justify-between p-4 flex-col pointer-events-none">
-        <div className="self-start backdrop-blur-md bg-white bg-opacity-50 p-4 rounded-lg">
-          <h1 className="font-black text-xl">MyZayna</h1>
-          <p>I will always guide you!</p>
+      <div className="fixed top-0 left-0 right-0 bottom-0 z-10 flex justify-between p-2 sm:p-4 flex-col pointer-events-none">
+        {/* Header */}
+        <div className="self-start backdrop-blur-md bg-white bg-opacity-50 p-3 sm:p-4 rounded-lg max-w-xs sm:max-w-none">
+          <h1 className="font-black text-lg sm:text-xl">MyZayna</h1>
+          <p className="text-sm sm:text-base">I will always guide you!</p>
         </div>
-        <div className="w-full flex flex-col items-end justify-center gap-4">
+        {/* Control buttons */}
+        <div className="w-full flex flex-col items-end justify-center gap-2 sm:gap-4">
           <button
             onClick={() => setCameraZoomed(!cameraZoomed)}
-            className="pointer-events-auto bg-pink-500 hover:bg-pink-600 text-white p-4 rounded-md"
+             className="pointer-events-auto bg-pink-500 hover:bg-pink-600 text-white p-3 sm:p-4 rounded-md transition-colors"
+            aria-label={cameraZoomed ? "Zoom out" : "Zoom in"}
           >
             {cameraZoomed ? (
               <svg
@@ -35,7 +38,7 @@ export const UI = ({ hidden, ...props }) => {
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-6 h-6"
+                className="w-5 h-5 sm:w-6 sm:h-6"
               >
                 <path
                   strokeLinecap="round"
@@ -50,7 +53,7 @@ export const UI = ({ hidden, ...props }) => {
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-6 h-6"
+                className="w-5 h-5 sm:w-6 sm:h-6"
               >
                 <path
                   strokeLinecap="round"
@@ -69,7 +72,8 @@ export const UI = ({ hidden, ...props }) => {
                 body.classList.add("greenScreen");
               }
             }}
-            className="pointer-events-auto bg-pink-500 hover:bg-pink-600 text-white p-4 rounded-md"
+            className="pointer-events-auto bg-pink-500 hover:bg-pink-600 text-white p-3 sm:p-4 rounded-md transition-colors"
+            aria-label="Toggle green screen"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -77,7 +81,7 @@ export const UI = ({ hidden, ...props }) => {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-6 h-6"
+              className="w-5 h-5 sm:w-6 sm:h-6"
             >
               <path
                 strokeLinecap="round"
@@ -86,9 +90,10 @@ export const UI = ({ hidden, ...props }) => {
             </svg>
           </button>
         </div>
-        <div className="flex items-center gap-2 pointer-events-auto max-w-screen-sm w-full mx-auto">
+        {/* Chat input */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pointer-events-auto max-w-screen-sm w-full mx-auto">
           <input
-            className="w-full placeholder:text-gray-800 placeholder:italic p-4 rounded-md bg-opacity-50 bg-white backdrop-blur-md"
+            className="w-full placeholder:text-gray-800 placeholder:italic p-3 sm:p-4 rounded-md bg-opacity-50 bg-white backdrop-blur-md text-sm sm:text-base"
             placeholder="Type a message..."
             ref={input}
             onKeyDown={(e) => {
@@ -100,7 +105,7 @@ export const UI = ({ hidden, ...props }) => {
           <button
             disabled={loading || message}
             onClick={sendMessage}
-            className={`bg-pink-500 hover:bg-pink-600 text-white p-4 px-10 font-semibold uppercase rounded-md ${
+            className={`bg-pink-500 hover:bg-pink-600 text-white p-3 sm:p-4 px-6 sm:px-10 font-semibold uppercase rounded-md text-sm sm:text-base transition-colors ${
               loading || message ? "cursor-not-allowed opacity-30" : ""
             }`}
           >

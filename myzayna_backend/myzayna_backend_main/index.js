@@ -42,8 +42,23 @@ const execCommand = (command) => {
 };
 
 const generateAudioWithGtts = async (text, fileName) => {
-  const command = `python gtts_speak.py "${text}" ${fileName}`;
-  await execCommand(command);
+  try {
+    // Use virtual environment Python if available, fallback to system Python
+    const pythonCommand = process.platform === "win32" 
+      ? "venv\\Scripts\\python.exe" 
+      : "./venv/bin/python";
+
+    const command = `${pythonCommand} gtts_speak.py "${text}" ${fileName}`;
+    await execCommand(command);
+  } catch (error) {
+    console.error("Error generating audio with gTTS:", error.message);
+    if (error.message.includes("ModuleNotFoundError: No module named 'gtts'")) {
+      console.error("❌ gTTS module not found. Please install Python dependencies:");
+      console.error("   Run: npm run install-python-deps");
+      console.error("   Or manually: pip install gtts");
+    }
+    throw new Error(`Audio generation failed: ${error.message}`);
+  }
 };
 
 const lipSyncMessage = async (messageIndex) => {
