@@ -169,15 +169,22 @@ Keep it engaging, emotionally varied, and girlfriend-like. Never sound like a ch
   }
 
   for (let i = 0; i < messages.length; i++) {
-    const message = messages[i];
-    const fileName = `audios/message_${i}.mp3`;
-    const textInput = message.text;
-    await generateAudioWithGtts(textInput, fileName);
-    try {
-  await lipSyncMessage(i);
-} catch (err) {
-  console.warn(`⚠️ Lip sync generation failed: ${err.message}`);
+  const message = messages[i];
+  const fileName = `audios/message_${i}.mp3`;
+
+  await generateAudioWithGtts(message.text, fileName);
+
+  message.audio = await audioFileToBase64(fileName);
+
+  try {
+    await lipSyncMessage(i);
+    message.lipsync = await readJsonTranscript(`audios/message_${i}.json`);
+  } catch (err) {
+    console.warn(`⚠️ Lip sync failed or missing JSON: ${err.message}`);
+    message.lipsync = null;
+  }
 }
+
 
     message.audio = await audioFileToBase64(fileName);
     message.lipsync = await readJsonTranscript(`audios/message_${i}.json`);
