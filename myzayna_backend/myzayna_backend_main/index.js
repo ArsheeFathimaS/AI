@@ -45,8 +45,9 @@ const generateAudioWithGtts = async (text, fileName) => {
   try {
     // Use virtual environment Python if available, fallback to system Python
     const pythonCommand = process.platform === "win32" 
-      ? "venv\\Scripts\\python.exe" 
-      : "./venv/bin/python";
+  ? "venv\\Scripts\\python.exe" 
+  : "python3";  // ✅ Use system Python on Render (Linux)
+
 
     const command = `${pythonCommand} gtts_speak.py "${text}" ${fileName}`;
     await execCommand(command);
@@ -172,7 +173,12 @@ Keep it engaging, emotionally varied, and girlfriend-like. Never sound like a ch
     const fileName = `audios/message_${i}.mp3`;
     const textInput = message.text;
     await generateAudioWithGtts(textInput, fileName);
-    await lipSyncMessage(i);
+    try {
+  await lipSyncMessage(i);
+} catch (err) {
+  console.warn(`⚠️ Lip sync generation failed: ${err.message}`);
+}
+
     message.audio = await audioFileToBase64(fileName);
     message.lipsync = await readJsonTranscript(`audios/message_${i}.json`);
   }
