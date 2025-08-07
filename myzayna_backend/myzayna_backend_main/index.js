@@ -177,21 +177,30 @@ Keep it engaging, emotionally varied, and girlfriend-like. Never sound like a ch
   message.audio = await audioFileToBase64(fileName);
 
   try {
-    await lipSyncMessage(i);
-    message.lipsync = await readJsonTranscript(`audios/message_${i}.json`);
-  } catch (err) {
-    console.warn(`⚠️ Lip sync failed or missing JSON: ${err.message}`);
-    message.lipsync = null;
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
+    const fileName = `audios/message_${i}.mp3`;
+
+    await generateAudioWithGtts(message.text, fileName);
+    message.audio = await audioFileToBase64(fileName);
+
+    try {
+      await lipSyncMessage(i);
+      message.lipsync = await readJsonTranscript(`audios/message_${i}.json`);
+    } catch (err) {
+      console.warn(`⚠️ Lip sync failed or missing JSON: ${err.message}`);
+      message.lipsync = null;
+    }
   }
+
+  // ✅ This must be *inside* the try block
+  res.send({ messages });
+
+} catch (err) {
+  console.error("🔥 Error generating chat response:", err);
+  res.status(500).send({ error: "Something went wrong" });
 }
 
-
-    message.audio = await audioFileToBase64(fileName);
-    message.lipsync = await readJsonTranscript(`audios/message_${i}.json`);
-  }
-
-  res.send({ messages });
-});
 
 const readJsonTranscript = async (file) => {
   const data = await fs.readFile(file, "utf8");
