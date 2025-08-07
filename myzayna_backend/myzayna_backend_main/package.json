@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
+    "start":"chmod +x tools/rhubarb/rhubarb && node index.js",
     "dev": "nodemon index.js --ext js",
     "install-python-deps": "pip install -r requirements.txt"
   },
