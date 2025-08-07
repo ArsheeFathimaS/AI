@@ -45,10 +45,11 @@ const generateAudioWithGtts = async (text, fileName) => {
     const pythonCommand = process.platform === "win32"
       ? "venv\\Scripts\\python.exe"
       : "python3";
-    const command = `${pythonCommand} gtts_speak.py "${text}" ${fileName}`;
+    const safeText = text.replace(/"/g, '\\"'); // escape quotes
+    const command = `${pythonCommand} gtts_speak.py "${safeText}" ${fileName}`;
     await execCommand(command);
   } catch (error) {
-    console.error("Error generating audio with gTTS:", error.message);
+    console.error("❌ Error generating audio with gTTS:", error.message);
     throw new Error(`Audio generation failed: ${error.message}`);
   }
 };
@@ -63,12 +64,12 @@ const lipSyncMessage = async (messageIndex) => {
   await execCommand(
     `ffmpeg -y -i audios/message_${messageIndex}.mp3 audios/message_${messageIndex}.wav`
   );
-  console.log(`Conversion done in ${Date.now() - time}ms`);
+  console.log(`🎧 Conversion done in ${Date.now() - time}ms`);
 
   await execCommand(
     `"${rhubarbPath}" -f json -o audios/message_${messageIndex}.json audios/message_${messageIndex}.wav -r phonetic`
   );
-  console.log(`Lip sync done in ${Date.now() - time}ms`);
+  console.log(`👄 Lip sync done in ${Date.now() - time}ms`);
 };
 
 const readJsonTranscript = async (file) => {
@@ -124,11 +125,20 @@ app.post("/chat", async (req, res) => {
       model: "gpt-3.5-turbo-1106",
       max_tokens: 1000,
       temperature: 0.6,
-      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
-          content: `You are a caring, playful, emotionally expressive virtual girlfriend named Rea...`,
+          content: `You are a loving and emotionally expressive virtual girlfriend named Rea. Respond in this JSON format:
+{
+  "messages": [
+    {
+      "text": "...",
+      "facialExpression": "...",
+      "animation": "..."
+    },
+    ...
+  ]
+}`,
         },
         {
           role: "user",
@@ -144,8 +154,13 @@ app.post("/chat", async (req, res) => {
       const message = messages[i];
       const fileName = `audios/message_${i}.mp3`;
 
-      await generateAudioWithGtts(message.text, fileName);
-      message.audio = await audioFileToBase64(fileName);
+      try {
+        await generateAudioWithGtts(message.text, fileName);
+        message.audio = await audioFileToBase64(fileName);
+      } catch (err) {
+        console.warn(`⚠️ Audio generation failed: ${err.message}`);
+        message.audio = null;
+      }
 
       try {
         await lipSyncMessage(i);
@@ -158,7 +173,7 @@ app.post("/chat", async (req, res) => {
 
     res.send({ messages });
   } catch (err) {
-    console.error("🔥 Error generating chat response:", err);
+    console.error("🔥 Error generating chat response:", err.stack || err);
     res.status(500).send({ error: "Something went wrong" });
   }
 });
@@ -183,7 +198,7 @@ server.listen(port, () => {
   console.log(`🧠 MyZayna backend running on port ${port}`);
 });
 
-// Catch unhandled errors
+// Global error handling
 process.on("unhandledRejection", (err) => {
   console.error("🔥 Unhandled Promise Rejection:", err);
 });
