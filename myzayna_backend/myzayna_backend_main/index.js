@@ -11,6 +11,13 @@ import http from "http";
 import { WebSocketServer } from "ws";
 
 dotenv.config();
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("💥 Unhandled Rejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("💥 Uncaught Exception:", err);
+});
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

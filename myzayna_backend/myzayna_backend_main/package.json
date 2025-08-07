@@ -7,8 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js --ext js",
-    "postinstall": "python3 -m venv venv && ./venv/bin/pip install -r requirements.txt",
-    "install-python-deps": "python3 -m venv venv && ./venv/bin/pip install -r requirements.txt"
+    "install-python-deps": "pip install -r requirements.txt"
   },
   "author": "Wawa SENSEI <contact@wawasensei.dev>",
   "dependencies": {
