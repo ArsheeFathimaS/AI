@@ -7,12 +7,44 @@ import { useChat } from "../hooks/useChat";
 
 const facialExpressions = {
   default: {},
-  smile: { browInnerUp: 0.17, eyeSquintLeft: 0.4, eyeSquintRight: 0.44, noseSneerLeft: 0.17, noseSneerRight: 0.14, mouthPressLeft: 0.61, mouthPressRight: 0.41 },
-  funnyFace: { jawLeft: 0.63, mouthPucker: 0.53, noseSneerLeft: 1, noseSneerRight: 0.39, mouthLeft: 1, eyeLookUpLeft: 1, eyeLookUpRight: 1, cheekPuff: 1, mouthDimpleLeft: 0.41, mouthRollLower: 0.32, mouthSmileLeft: 0.35, mouthSmileRight: 0.35 },
-  sad: { mouthFrownLeft: 1, mouthFrownRight: 1, mouthShrugLower: 0.78, browInnerUp: 0.45, eyeSquintLeft: 0.72, eyeSquintRight: 0.75, eyeLookDownLeft: 0.5, eyeLookDownRight: 0.5, jawForward: 1 },
-  surprised: { eyeWideLeft: 0.5, eyeWideRight: 0.5, jawOpen: 0.35, mouthFunnel: 1, browInnerUp: 1 },
-  angry: { browDownLeft: 1, browDownRight: 1, eyeSquintLeft: 1, eyeSquintRight: 1, jawForward: 1, jawLeft: 1, mouthShrugLower: 1, noseSneerLeft: 1, noseSneerRight: 0.42, eyeLookDownLeft: 0.16, eyeLookDownRight: 0.16, cheekSquintLeft: 1, cheekSquintRight: 1, mouthClose: 0.23, mouthFunnel: 0.63, mouthDimpleRight: 1 },
-  crazy: { browInnerUp: 0.9, jawForward: 1, noseSneerLeft: 0.57, noseSneerRight: 0.51, eyeLookDownLeft: 0.39, eyeLookUpRight: 0.4, eyeLookInLeft: 0.96, eyeLookInRight: 0.96, jawOpen: 0.96, mouthDimpleLeft: 0.96, mouthDimpleRight: 0.96, mouthStretchLeft: 0.27, mouthStretchRight: 0.28, mouthSmileLeft: 0.55, mouthSmileRight: 0.38, tongueOut: 0.96 }
+  smile: {
+    browInnerUp: 0.17, eyeSquintLeft: 0.4, eyeSquintRight: 0.44,
+    noseSneerLeft: 0.17, noseSneerRight: 0.14,
+    mouthPressLeft: 0.61, mouthPressRight: 0.41
+  },
+  funnyFace: {
+    jawLeft: 0.63, mouthPucker: 0.53, noseSneerLeft: 1, noseSneerRight: 0.39,
+    mouthLeft: 1, eyeLookUpLeft: 1, eyeLookUpRight: 1, cheekPuff: 1,
+    mouthDimpleLeft: 0.41, mouthRollLower: 0.32,
+    mouthSmileLeft: 0.35, mouthSmileRight: 0.35
+  },
+  sad: {
+    mouthFrownLeft: 1, mouthFrownRight: 1, mouthShrugLower: 0.78,
+    browInnerUp: 0.45, eyeSquintLeft: 0.72, eyeSquintRight: 0.75,
+    eyeLookDownLeft: 0.5, eyeLookDownRight: 0.5, jawForward: 1
+  },
+  surprised: {
+    eyeWideLeft: 0.5, eyeWideRight: 0.5, jawOpen: 0.35,
+    mouthFunnel: 1, browInnerUp: 1
+  },
+  angry: {
+    browDownLeft: 1, browDownRight: 1, eyeSquintLeft: 1, eyeSquintRight: 1,
+    jawForward: 1, jawLeft: 1, mouthShrugLower: 1,
+    noseSneerLeft: 1, noseSneerRight: 0.42,
+    eyeLookDownLeft: 0.16, eyeLookDownRight: 0.16,
+    cheekSquintLeft: 1, cheekSquintRight: 1,
+    mouthClose: 0.23, mouthFunnel: 0.63, mouthDimpleRight: 1
+  },
+  crazy: {
+    browInnerUp: 0.9, jawForward: 1,
+    noseSneerLeft: 0.57, noseSneerRight: 0.51,
+    eyeLookDownLeft: 0.39, eyeLookUpRight: 0.4,
+    eyeLookInLeft: 0.96, eyeLookInRight: 0.96,
+    jawOpen: 0.96, mouthDimpleLeft: 0.96, mouthDimpleRight: 0.96,
+    mouthStretchLeft: 0.27, mouthStretchRight: 0.28,
+    mouthSmileLeft: 0.55, mouthSmileRight: 0.38,
+    tongueOut: 0.96
+  }
 };
 
 const corresponding = {
@@ -36,7 +68,7 @@ export function Avatar(props) {
   const [winkRight, setWinkRight] = useState(false);
 
   const group = useRef();
-  const { actions, mixer } = useAnimations(animations, group);
+  const { actions } = useAnimations(animations, group);
 
   useEffect(() => {
     if (!animations.length) return;
@@ -48,7 +80,7 @@ export function Avatar(props) {
     if (!actions || !actions[animation]) return;
     actions[animation].reset().fadeIn(0.5).play();
     return () => actions[animation].fadeOut(0.5);
-  }, [animation]);
+  }, [animation, actions]);
 
   useEffect(() => {
     if (!message) {
@@ -109,6 +141,15 @@ export function Avatar(props) {
     });
   });
 
+  const [, set] = useControls("MorphTarget", () =>
+    Object.assign({}, ...Object.keys(nodes.EyeLeft?.morphTargetDictionary || {}).map(key => ({
+      [key]: {
+        label: key, value: 0, min: 0, max: 1,
+        onChange: val => setupMode && lerpMorphTarget(key, val, 1)
+      }
+    })))
+  );
+
   useControls("FacialExpressions", {
     chat: button(() => chat()),
     winkLeft: button(() => { setWinkLeft(true); setTimeout(() => setWinkLeft(false), 300); }),
@@ -135,15 +176,6 @@ export function Avatar(props) {
     })
   });
 
-  const [, set] = useControls("MorphTarget", () =>
-    Object.assign({}, ...Object.keys(nodes.EyeLeft?.morphTargetDictionary || {}).map(key => ({
-      [key]: {
-        label: key, value: 0, min: 0, max: 1,
-        onChange: val => setupMode && lerpMorphTarget(key, val, 1)
-      }
-    })))
-  );
-
   useEffect(() => {
     let timeout;
     const blinkLoop = () => {
@@ -156,35 +188,9 @@ export function Avatar(props) {
     return () => clearTimeout(timeout);
   }, []);
 
-  if (!nodes?.Hips) {
-    console.warn("⚠️ Avatar model missing 'Hips'. nodes =", nodes);
-    return null;
-  }
-
   return (
     <group {...props} dispose={null} ref={group}>
-      <primitive object={nodes.Hips} />
-      {[
-        "Wolf3D_Body",
-        "Wolf3D_Outfit_Bottom",
-        "Wolf3D_Outfit_Footwear",
-        "Wolf3D_Outfit_Top",
-        "Wolf3D_Hair",
-        "EyeLeft",
-        "EyeRight",
-        "Wolf3D_Head",
-        "Wolf3D_Teeth"
-      ].map((name) => (
-        <skinnedMesh
-          key={name}
-          name={name}
-          geometry={nodes[name]?.geometry}
-          material={materials[nodes[name]?.material?.name]}
-          skeleton={nodes[name]?.skeleton}
-          morphTargetDictionary={nodes[name]?.morphTargetDictionary}
-          morphTargetInfluences={nodes[name]?.morphTargetInfluences}
-        />
-      ))}
+      <primitive object={scene} />
     </group>
   );
 }
