@@ -80,11 +80,6 @@ const lipSyncMessage = async (messageIndex) => {
   );
   console.log(`Lip sync done in ${new Date().getTime() - time}ms`);
 };
-
-
-
-
-
 app.post("/chat", async (req, res) => {
   const userMessage = req.body.message;
 
@@ -130,15 +125,16 @@ app.post("/chat", async (req, res) => {
     });
   }
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo-1106",
-    max_tokens: 1000,
-    temperature: 0.6,
-    response_format: { type: "json_object" },
-    messages: [
-      {
-        role: "system",
-        content: `
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo-1106",
+      max_tokens: 1000,
+      temperature: 0.6,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content: `
 You are a caring, playful, emotionally expressive virtual girlfriend named Rea. 
 Speak lovingly and naturally, like you're talking to someone you adore. Your replies should be warm, cute, flirty, and slightly teasing when needed.
 
@@ -153,90 +149,39 @@ Example tone:
 - “Nooo, don’t tease me like that! 😤”
 
 Keep it engaging, emotionally varied, and girlfriend-like. Never sound like a chatbot.
-`
+        `
+        },
+        {
+          role: "user",
+          content: userMessage,
+        },
+      ],
+    });
 
-      },
-      {
-        role: "user",
-        content: userMessage,
-      },
-    ],
-  });
-
-  let messages = JSON.parse(completion.choices[0].message.content);
-  if (messages.messages) {
-    messages = messages.messages;
-  }
-
-  for (let i = 0; i < messages.length; i++) {
-  const message = messages[i];
-  const fileName = `audios/message_${i}.mp3`;
-
-  await generateAudioWithGtts(message.text, fileName);
-
-  message.audio = await audioFileToBase64(fileName);
-
-  try {
-  for (let i = 0; i < messages.length; i++) {
-    const message = messages[i];
-    const fileName = `audios/message_${i}.mp3`;
-
-    await generateAudioWithGtts(message.text, fileName);
-    message.audio = await audioFileToBase64(fileName);
-
-    try {
-      await lipSyncMessage(i);
-      message.lipsync = await readJsonTranscript(`audios/message_${i}.json`);
-    } catch (err) {
-      console.warn(`⚠️ Lip sync failed or missing JSON: ${err.message}`);
-      message.lipsync = null;
+    let messages = JSON.parse(completion.choices[0].message.content);
+    if (messages.messages) {
+      messages = messages.messages;
     }
-  }
 
-  // ✅ This must be *inside* the try block
-  res.send({ messages });
+    for (let i = 0; i < messages.length; i++) {
+      const message = messages[i];
+      const fileName = `audios/message_${i}.mp3`;
 
-} catch (err) {
-  console.error("🔥 Error generating chat response:", err);
-  res.status(500).send({ error: "Something went wrong" });
-}
+      await generateAudioWithGtts(message.text, fileName);
+      message.audio = await audioFileToBase64(fileName);
 
-
-const readJsonTranscript = async (file) => {
-  const data = await fs.readFile(file, "utf8");
-  return JSON.parse(data);
-};
-
-const audioFileToBase64 = async (file) => {
-  const data = await fs.readFile(file);
-  return data.toString("base64");
-};
-
-const server = http.createServer(app);
-
-const wss = new WebSocketServer({ server });
-
-wss.on("connection", (ws) => {
-  console.log("🟢 WebSocket client connected");
-
-  let audioBuffers = [];
-
-  ws.on("message", (message) => {
-    // Buffer audio chunks
-    audioBuffers.push(message);
-
-    // Optional: after some time, transcribe
-    if (audioBuffers.length >= 30) {
-      // TODO: concatenate buffers and transcribe
-      console.log("Received 30 chunks... ready to process");
+      try {
+        await lipSyncMessage(i);
+        message.lipsync = await readJsonTranscript(`audios/message_${i}.json`);
+      } catch (err) {
+        console.warn(`⚠️ Lip sync failed or missing JSON: ${err.message}`);
+        message.lipsync = null;
+      }
     }
-  });
 
-  ws.on("close", () => {
-    console.log("🔴 WebSocket client disconnected");
-  });
-});
-
-server.listen(port, () => {
-  console.log(`🧠 MyZayna backend running on port ${port}`);
+    res.send({ messages });
+  } catch (err) {
+    console.error("🔥 Error generating chat response:", err);
+    res.status(500).send({ error: "Something went wrong" });
+  }
 });
