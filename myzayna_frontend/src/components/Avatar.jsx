@@ -196,4 +196,4 @@ export function Avatar(props) {
 }
 
 useGLTF.preload("models/64f1a714fe61576b46f27ca2.glb");
-useGLTF.preload("models/animations.glb");
+useGLTF.preload("public/animations/animations.glb");
